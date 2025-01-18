@@ -1,40 +1,54 @@
 import { HeartIcon, HeartPulseIcon, Search, Soup } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import RecipeCard from '../components/RecipeCard';
+import { getRandomColor } from '../lib/utils';
 
-const APP_ID ="613cfbd1"
-const APP_KEY ="7d6a07725c32d603ceb4db3c78210461"
-const proxy = "https://corsproxy.io/?";
+const APP_ID = "613cfbd1"
+const APP_KEY = "7d6a07725c32d603ceb4db3c78210461"
 
 const HomePage = () => {
-  const[recipes, setRecipes] = useState([]);
-  const[loading, setLoading] = useState(true);
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const fetchRecipes = async (searchQuery) => {
     setLoading(true);
     setRecipes([]);
     try {
-      const res = await fetch(`${proxy}https://api.edamam.com/api/recipes/v2/?app_id=${APP_ID}&app_key=${APP_KEY}&q=${searchQuery}&type=public`);
+
+      const res = await fetch(
+        `https://api.edamam.com/api/recipes/v2?app_id=${APP_ID}&app_key=${APP_KEY}&q=${searchQuery}&type=public`,
+
+        {
+          headers: {
+            "Edamam-Account-User": "Preksha1609", // Add if required by your plan
+          },
+        }
+      );
       const data = await res.json();
       setRecipes(data.hits);
-      console.log(data);
-    } catch (error) {
-      console.log(error.message); 
+      console.log(data.hits);
 
-    }finally {
+
+    } catch (error) {
+      console.log(error.message);
+
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect( () => {
-    fetchRecipes("chicken");
+  useEffect(() => {
+    fetchRecipes("Dosa");
   }, []);
 
-
+  const handleSearchRecipe = (e) => {
+    e.preventDefault();
+    fetchRecipes(e.target[0].value);
+  };
 
   return (
     <div className='bg-[#faf9fb] p-10 flex-1'>
       <div className='max-w-screen-lg mx-auto'>
-        <form>
+        <form onSubmit ={handleSearchRecipe}>
           <label className='input shadow-md flex items-center gap-2'>
             <Search size={"24"} />
             <input type='text'
@@ -51,24 +65,33 @@ const HomePage = () => {
           Popular choices
         </p>
         <div className='grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
-          {/* 1st recipe */}
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-          <RecipeCard />
-				</div>
-			</div>
-		</div>
-	);
+
+        {!loading &&
+						recipes.map(({ recipe }, index) => (
+							<RecipeCard key={index} recipe={recipe}   {...getRandomColor()}/>
+						))}
+
+					{loading &&
+						[...Array(9)].map((_, index) => (
+							<div key={index} className='flex flex-col gap-4 w-full'>
+								<div className='skeleton h-32 w-full'></div>
+								<div className='flex justify-between'>
+									<div className='skeleton h-4 w-28'></div>
+									<div className='skeleton h-4 w-24'></div>
+								</div>
+								<div className='skeleton h-4 w-1/2'></div>
+							</div>
+						))}
+
+
+        </div>
+      </div>
+    </div>
+  );
 };
 export default HomePage;
-          
-          
+
+
 
 
 
